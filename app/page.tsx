@@ -20,17 +20,8 @@ export default function Home() {
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error("Session alma hatası:", error.message);
-        return;
-      }
-
-      setUser(session?.user ?? null);
+      const { data, error } = await supabase.auth.getSession();
+      setUser(data?.session?.user ?? null);
     };
 
     getUser();

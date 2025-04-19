@@ -10,8 +10,6 @@ const UrunEkle = () => {
   const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = async () => {
-    const user = (await supabase.auth.getUser()).data.user;
-
     const { error } = await supabase.from("products").insert([
       {
         title,

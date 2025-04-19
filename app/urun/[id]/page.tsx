@@ -10,25 +10,21 @@ interface Product {
   image_url?: string;
   quantity: number;
 }
-
 interface CartItem extends Product {
   quantity: number;
 }
-
 const UrunDetay = () => {
   const params = useParams();
   const urunId = params?.id;
-  const [urun, setUrun] = useState<any>(null);
+  const [urun, setUrun] = useState<Product | null>(null);
   useEffect(() => {
     const fetchUrun = async () => {
       if (!urunId) return;
-
       const { data, error } = await supabase
         .from("products")
         .select("*")
         .eq("id", urunId)
         .maybeSingle();
-
       if (error) {
         console.error("Hata:", error.message);
       } else {
@@ -41,20 +37,31 @@ const UrunDetay = () => {
   const addToCart = async () => {
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
-    const userKey = user?.email || "guest";
+    const userKey = user?.email || "guest"; // Eğer kullanıcı giriş yapmamışsa "guest" olarak işlem yap
 
+    // LocalStorage'dan cart'ı al veya boş bir dizi oluştur
     const cart: CartItem[] = JSON.parse(
       localStorage.getItem(`cart-${userKey}`) || "[]"
     );
 
+    // Eğer urun null veya undefined ise, fonksiyonu sonlandır
+    if (!urun || !urun.id) {
+      console.log("Ürün bilgisi eksik");
+      return;
+    }
+
+    // Sepette mevcut ürün var mı kontrol et
     const existingItem = cart.find((item) => item.id === urun.id);
 
+    // Mevcut ürün varsa, miktarını artır
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
+      // Ürün sepette yoksa, yeni ürün ekle
       cart.push({ ...urun, quantity: 1 });
     }
 
+    // Güncellenmiş sepete yeni veriyi localStorage'a kaydet
     localStorage.setItem(`cart-${userKey}`, JSON.stringify(cart));
     alert("Ürün sepete eklendi");
   };
