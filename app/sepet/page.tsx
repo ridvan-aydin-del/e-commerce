@@ -23,7 +23,7 @@ export default function Sepet() {
   // Kullanıcı bilgisi alınıyor
   useEffect(() => {
     const getUser = async () => {
-      const { data, error } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       setUser(data.session?.user ?? null);
     };
     getUser();

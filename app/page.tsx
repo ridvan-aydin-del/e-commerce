@@ -20,7 +20,7 @@ export default function Home() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data, error } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       setUser(data?.session?.user ?? null);
     };
 
@@ -28,14 +28,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-    };
-
-    fetchSession();
-
     const fetchIlanlar = async () => {
       const { data, error } = await supabase.from("products").select("*");
 
