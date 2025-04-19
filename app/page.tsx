@@ -20,8 +20,17 @@ export default function Home() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser(data?.session?.user ?? null);
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Session alma hatas\u0131:", error.message);
+        return;
+      }
+
+      setUser(session?.user ?? null);
     };
 
     getUser();
@@ -32,7 +41,10 @@ export default function Home() {
       const { data, error } = await supabase.from("products").select("*");
 
       if (error) {
-        console.error("Ürünler yüklenirken hata:", error.message);
+        console.error(
+          "\u00dcr\u00fcnler y\u00fcklenirken hata:",
+          error.message
+        );
       } else {
         setProducts(data);
       }
@@ -40,6 +52,7 @@ export default function Home() {
 
     fetchIlanlar();
   }, []);
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {user?.email === "admin@gmail.com" && (
@@ -47,7 +60,7 @@ export default function Home() {
           onClick={() => router.push("/urun-ekle")}
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         >
-          + Yeni Ürün Ekle
+          + Yeni \u00dcr\u00fcn Ekle
         </button>
       )}
       {products.map((product) => (
@@ -64,7 +77,7 @@ export default function Home() {
                 className="object-cover w-full h-full group-hover:scale-105 transition"
               />
             ) : (
-              <span className="text-gray-500">Görsel Yok</span>
+              <span className="text-gray-500">G\u00f6rsel Yok</span>
             )}
           </div>
           <div className="p-4">

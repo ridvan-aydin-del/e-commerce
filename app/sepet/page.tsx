@@ -20,25 +20,29 @@ export default function Sepet() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
-  // Kullanıcı bilgisi alınıyor
   useEffect(() => {
     const getUser = async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
       setUser(data.session?.user ?? null);
     };
     getUser();
   }, []);
 
-  // Sepet yükleniyor
   useEffect(() => {
-    if (!user) return;
+    if (typeof window === "undefined") return;
 
-    const userKey = user.email || "guest";
-    const savedCart = JSON.parse(
-      localStorage.getItem(`cart-${userKey}`) || "[]"
-    );
-    setCart(savedCart);
-    calculateTotalPrice(savedCart);
+    const userKey = user?.email || "guest";
+
+    try {
+      const savedCart = JSON.parse(
+        localStorage.getItem(`cart-${userKey}`) || "[]"
+      ) as CartItem[];
+
+      setCart(savedCart);
+      calculateTotalPrice(savedCart);
+    } catch (e) {
+      console.error("Sepet okunurken hata:", e);
+    }
   }, [user]);
 
   const calculateTotalPrice = (items: CartItem[]) => {

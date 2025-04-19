@@ -10,9 +10,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { error } = await supabase.auth.getSession();
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
     if (error) {
       setError(error.message);
