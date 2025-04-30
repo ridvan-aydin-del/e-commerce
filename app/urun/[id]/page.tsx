@@ -83,15 +83,13 @@ const UrunDetay = () => {
       }
     } else {
       // Eğer ürün yoksa, yeni ürün ekle
-      const { data, error: insertError } = await supabase
-        .from("cart_items")
-        .insert([
-          {
-            user_id: userId,
-            product_id: productId,
-            quantity: 1, // Yeni ürün eklenirken quantity 1
-          },
-        ]);
+      const { error: insertError } = await supabase.from("cart_items").insert([
+        {
+          user_id: userId,
+          product_id: productId,
+          quantity: 1, // Yeni ürün eklenirken quantity 1
+        },
+      ]);
 
       if (insertError) {
         console.error("Yeni ürün sepete eklenemedi:", insertError.message);
