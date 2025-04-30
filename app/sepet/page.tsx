@@ -123,7 +123,7 @@ export default function Sepet() {
         <p>Sepetiniz boş.</p>
       ) : (
         <div>
-          {cart.map((item, index) => {
+          {cart.map((item) => {
             const product = cartDetails.find((p) => p.id === item.product_id);
             if (!product) return null;
 
