@@ -12,10 +12,6 @@ interface Product {
   image_url?: string;
 }
 
-interface CartItem extends Product {
-  quantity: number;
-}
-
 const UrunDetay = () => {
   const params = useParams();
   const urunId = params?.id as string;

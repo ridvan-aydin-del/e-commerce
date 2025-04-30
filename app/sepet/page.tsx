@@ -52,9 +52,9 @@ export default function Sepet() {
   }, [user]);
 
   const fetchProductDetails = async (cartItems: CartItem[]) => {
-    let details: Product[] = [];
+    const details: Product[] = [];
 
-    for (let item of cartItems) {
+    for (const item of cartItems) {
       const { data, error } = await supabase
         .from("products")
         .select("*")
