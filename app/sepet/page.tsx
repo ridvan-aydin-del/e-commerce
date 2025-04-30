@@ -19,7 +19,7 @@ interface CartItem {
 export default function Sepet() {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [cartDetails, setCartDetails] = useState<Product[]>([]); // Ürün bilgilerini tutacak
+  const [cartDetails, setCartDetails] = useState<Product[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
   useEffect(() => {
@@ -30,25 +30,26 @@ export default function Sepet() {
     getUser();
   }, []);
 
+  const fetchCartItems = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("cart_items")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Hata:", error.message);
+    } else {
+      setCart(data);
+      fetchProductDetails(data);
+    }
+  };
+
   useEffect(() => {
-    const fetchCartItems = async () => {
-      if (!user) return;
-
-      // Kullanıcıya ait sepet öğelerini alıyoruz
-      const { data, error } = await supabase
-        .from("cart_items")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error("Hata:", error.message);
-      } else {
-        setCart(data); // Sepet öğelerini state'e set ediyoruz
-        fetchProductDetails(data); // Ürün detaylarını çekiyoruz
-      }
-    };
-
-    fetchCartItems();
+    if (user) {
+      fetchCartItems();
+    }
   }, [user]);
 
   const fetchProductDetails = async (cartItems: CartItem[]) => {
@@ -59,34 +60,59 @@ export default function Sepet() {
         .from("products")
         .select("*")
         .eq("id", item.product_id)
-        .single(); // Ürün bilgilerini alıyoruz
+        .single();
 
       if (error) {
         console.error("Ürün bilgisi alınamadı:", error.message);
       } else {
-        details.push({
-          id: data.id,
-          title: data.title,
-          description: data.description,
-          price: data.price,
-          image_url: data.image_url,
-        });
+        details.push(data);
       }
     }
 
-    setCartDetails(details); // Ürün detaylarını state'e set ediyoruz
-    calculateTotal(details, cartItems); // Toplam fiyatı hesaplıyoruz
+    setCartDetails(details);
+    calculateTotal(details, cartItems);
   };
 
   const calculateTotal = (productDetails: Product[], cartItems: CartItem[]) => {
     let total = 0;
-
-    cartItems.forEach((item, index) => {
-      const product = productDetails[index];
-      total += product.price * item.quantity; // Ürün fiyatını ve miktarını kullanarak toplam fiyatı hesaplıyoruz
+    cartItems.forEach((item) => {
+      const product = productDetails.find((p) => p.id === item.product_id);
+      if (product) {
+        total += product.price * item.quantity;
+      }
     });
+    setTotalPrice(total);
+  };
 
-    setTotalPrice(total); // Toplam fiyatı state'e set ediyoruz
+  const handleDecrease = async (productId: string) => {
+    if (!user) return;
+
+    const item = cart.find((c) => c.product_id === productId);
+    if (!item) return;
+
+    if (item.quantity > 1) {
+      const { error } = await supabase
+        .from("cart_items")
+        .update({ quantity: item.quantity - 1 })
+        .eq("user_id", user.id)
+        .eq("product_id", productId);
+
+      if (error) {
+        console.error("Azaltma hatası:", error.message);
+      }
+    } else {
+      const { error } = await supabase
+        .from("cart_items")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", productId);
+
+      if (error) {
+        console.error("Silme hatası:", error.message);
+      }
+    }
+
+    fetchCartItems();
   };
 
   return (
@@ -98,8 +124,8 @@ export default function Sepet() {
       ) : (
         <div>
           {cart.map((item, index) => {
-            const product = cartDetails[index]; // Ürün detaylarını alıyoruz
-            if (!product) return null; // Eğer ürün bilgisi yoksa, render etmiyoruz
+            const product = cartDetails.find((p) => p.id === item.product_id);
+            if (!product) return null;
 
             return (
               <div
@@ -120,9 +146,15 @@ export default function Sepet() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">
+                  <p className="font-semibold mb-2">
                     {item.quantity} x {product.price} ₺
                   </p>
+                  <button
+                    onClick={() => handleDecrease(item.product_id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                  >
+                    Azalt
+                  </button>
                 </div>
               </div>
             );
