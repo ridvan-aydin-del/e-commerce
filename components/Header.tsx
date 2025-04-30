@@ -17,7 +17,19 @@ export default function Header() {
       } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
     };
+
     getUser();
+
+    // Oturum değişikliklerini dinle
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
