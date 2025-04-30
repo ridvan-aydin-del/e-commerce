@@ -41,10 +41,7 @@ export default function Home() {
       const { data, error } = await supabase.from("products").select("*");
 
       if (error) {
-        console.error(
-          "\u00dcr\u00fcnler y\u00fcklenirken hata:",
-          error.message
-        );
+        console.error("Ürünler Yüklenirken hata:", error.message);
       } else {
         setProducts(data);
       }
@@ -60,14 +57,14 @@ export default function Home() {
           onClick={() => router.push("/urun-ekle")}
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         >
-          + Yeni \u00dcr\u00fcn Ekle
+          + Yeni Ürün Ekle
         </button>
       )}
       {products.map((product) => (
         <Link
           href={`/urun/${product.id}`}
           key={product.id}
-          className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden shadow hover:shadow-xl transition group"
+          className="bg-gray-900 mt-5 border border-gray-800 rounded-lg overflow-hidden shadow hover:shadow-xl transition group"
         >
           <div className="h-48 bg-gray-800 flex items-center justify-center overflow-hidden">
             {product.image_url ? (
@@ -77,7 +74,7 @@ export default function Home() {
                 className="object-cover w-full h-full group-hover:scale-105 transition"
               />
             ) : (
-              <span className="text-gray-500">G\u00f6rsel Yok</span>
+              <span className="text-gray-500">Görsel Yok</span>
             )}
           </div>
           <div className="p-4">

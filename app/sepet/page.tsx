@@ -115,6 +115,25 @@ export default function Sepet() {
     fetchCartItems();
   };
 
+  const handleIncrease = async (productId: string) => {
+    if (!user) return;
+
+    const item = cart.find((c) => c.product_id === productId);
+    if (!item) return;
+
+    const { error } = await supabase
+      .from("cart_items")
+      .update({ quantity: item.quantity + 1 })
+      .eq("user_id", user.id)
+      .eq("product_id", productId);
+
+    if (error) {
+      console.error("Arttırma hatası:", error.message);
+    }
+
+    fetchCartItems();
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Sepet</h1>
@@ -154,6 +173,12 @@ export default function Sepet() {
                     className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
                   >
                     Azalt
+                  </button>
+                  <button
+                    onClick={() => handleIncrease(item.product_id)}
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+                  >
+                    Arttır
                   </button>
                 </div>
               </div>

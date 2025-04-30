@@ -96,9 +96,10 @@ const UrunDetay = () => {
       if (insertError) {
         console.error("Yeni ürün sepete eklenemedi:", insertError.message);
       } else {
-        console.log("Yeni ürün sepete eklendi", data);
+        console.log("Yeni ürün sepete eklendi");
       }
     }
+    alert("Ürün sepete eklendi !");
   };
 
   return (
