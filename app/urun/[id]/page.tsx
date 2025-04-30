@@ -1,8 +1,8 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 interface Product {
   id: string;
@@ -20,6 +20,7 @@ const UrunDetay = () => {
   const params = useParams();
   const urunId = params?.id as string;
   const [urun, setUrun] = useState<Product | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUrun = async () => {
@@ -41,27 +42,67 @@ const UrunDetay = () => {
     fetchUrun();
   }, [urunId]);
 
-  const addToCart = async () => {
-    if (!urun) return;
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
 
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
-    const userKey = user?.email || "guest";
+    getUser();
+  }, []);
 
-    const cart: CartItem[] = JSON.parse(
-      localStorage.getItem(`cart-${userKey}`) || "[]"
-    );
+  const addToCart = async (userId: string, productId: string) => {
+    if (!userId || !productId) return;
 
-    const existingItem = cart.find((item) => item.id === urun.id);
+    // Sepette bu ürün var mı kontrol et
+    const { data: existingCartItem, error: selectError } = await supabase
+      .from("cart_items")
+      .select("id, quantity")
+      .eq("user_id", userId)
+      .eq("product_id", productId)
+      .maybeSingle();
 
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({ ...urun, quantity: 1 });
+    if (selectError) {
+      console.error("Sepet kontrol hatası:", selectError.message);
+      return;
     }
 
-    localStorage.setItem(`cart-${userKey}`, JSON.stringify(cart));
-    alert("Ürün sepete eklendi");
+    if (existingCartItem) {
+      // Eğer ürün varsa, quantity'yi artır
+      const newQuantity = existingCartItem.quantity + 1;
+
+      const { data: updatedData, error: updateError } = await supabase
+        .from("cart_items")
+        .update({ quantity: newQuantity })
+        .eq("id", existingCartItem.id)
+        .select();
+
+      if (updateError) {
+        console.error("Sepet güncelleme hatası:", updateError.message);
+      } else {
+        console.log("Sepet güncellendi, yeni quantity:", newQuantity);
+        console.log("Güncellenen veriler:", updatedData); // Güncellenen verileri kontrol et
+      }
+    } else {
+      // Eğer ürün yoksa, yeni ürün ekle
+      const { data, error: insertError } = await supabase
+        .from("cart_items")
+        .insert([
+          {
+            user_id: userId,
+            product_id: productId,
+            quantity: 1, // Yeni ürün eklenirken quantity 1
+          },
+        ]);
+
+      if (insertError) {
+        console.error("Yeni ürün sepete eklenemedi:", insertError.message);
+      } else {
+        console.log("Yeni ürün sepete eklendi", data);
+      }
+    }
   };
 
   return (
@@ -77,7 +118,11 @@ const UrunDetay = () => {
       )}
       <p className="text-lg font-semibold text-green-600">{urun?.price} ₺</p>
       <button
-        onClick={addToCart}
+        onClick={() => {
+          if (user && urun) {
+            addToCart(user.id, urun.id);
+          }
+        }}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
       >
         Sepete Ekle
