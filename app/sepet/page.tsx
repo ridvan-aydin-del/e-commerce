@@ -170,7 +170,7 @@ export default function Sepet() {
                   </p>
                   <button
                     onClick={() => handleDecrease(item.product_id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                    className="mr-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
                   >
                     Azalt
                   </button>

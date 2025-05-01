@@ -101,24 +101,29 @@ const UrunDetay = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 space-y-4">
-      <h1 className="text-2xl font-bold text-gray-800">{urun?.title}</h1>
-      <p className="text-gray-600">{urun?.description}</p>
+    <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg overflow-hidden p-6 space-y-6 mt-10">
+      <h1 className="text-3xl font-bold text-gray-900">{urun?.title}</h1>
+      <p className="text-gray-700 leading-relaxed">{urun?.description}</p>
+
       {urun?.image_url && (
-        <img
-          src={urun.image_url}
-          alt={urun.title}
-          className="w-full h-48 object-cover rounded-lg"
-        />
+        <div className="rounded-lg overflow-hidden">
+          <img
+            src={urun.image_url}
+            alt={urun.title}
+            className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+          />
+        </div>
       )}
-      <p className="text-lg font-semibold text-green-600">{urun?.price} ₺</p>
+
+      <p className="text-xl font-semibold text-emerald-600">{urun?.price} ₺</p>
+
       <button
         onClick={() => {
           if (user && urun) {
             addToCart(user.id, urun.id);
           }
         }}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+        className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition font-medium text-lg"
       >
         Sepete Ekle
       </button>
